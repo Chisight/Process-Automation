@@ -1,4 +1,3 @@
-bin/__pycache__/
-lib/__pycache__/
-automation/__pycache__/
-automation/lib/__pycache__/*
+lib/extract_treadmill_data.py
+web/40-springfield/50-weather.html
+web/40-springfield/*
