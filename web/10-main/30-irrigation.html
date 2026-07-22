@@ -1,0 +1,29 @@
+    <div class="container">
+        <h1>Irrigation</h1>
+        <div class="light-control-group">
+            <div class="light-control">
+                <button id="water/valve/2/on">Garden Valve ON</button>
+                <button id="water/valve/2/off">Garden Valve OFF</button>
+            </div>
+            <div class="status-container">
+            <div id="water/valve/2state" class="status">unknown</div>&nbsp
+                <img class="statusimage" src="" alt="Status Image">
+            </div>
+        </div>
+    </div>
+    <script>
+        function water_valve_2(data) {
+            // Find the specific div with id "water/valve/2state"
+            const divElement = document.getElementById('water/valve/2state');
+            // Find the child img element within the div
+            const imgElement = divElement.nextElementSibling;
+            // Update status text
+            divElement.textContent = data.state;
+            // Update image source
+            const imageUrl = data.state === 'off' ? 'wateroff.png' : 'wateron.png';
+            //console.log("imageUrl:"+imageUrl);
+            imgElement.src = imageUrl;
+            //console.log("imgElement.src:"+imgElement.src);
+        }
+
+    </script>

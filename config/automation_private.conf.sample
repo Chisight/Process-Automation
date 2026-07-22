@@ -1,0 +1,3 @@
+LOCATION = chi los
+WEATHER_DATA_URL = https://forecast.weather.gov/MapClick.php?lon=-87.624&lat=41.873&w0=t&w2=wc&w3=sfcwind&w3u=1&w4=sky&w5=pop&w6=rh&w13u=0&w16u=1&w17u=1&pqpfhr=6&psnwhr=6&FcstType=digitalDWML \
+                   https://forecast.weather.gov/MapClick.php?lon=-118.243&lat=34.05&w0=t&w2=wc&w3=sfcwind&w3u=1&w4=sky&w5=pop&w6=rh&w13u=0&w16u=1&w17u=1&pqpfhr=6&psnwhr=6&FcstType=digitalDWML

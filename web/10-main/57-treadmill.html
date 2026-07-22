@@ -1,0 +1,78 @@
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Treadmill Data</h1>
+        <div id="total-distance" style="margin-left: 20px; display: inline-block; font-size: 1.5em;">
+            <strong>Miles:</strong> <span id="total-distance-value" style="font-size: 1.7em;">unknown</span>
+        </div>
+        <div id="instantaneous-speed" style="margin-left: 20px; display: inline-block; font-size: 1.5em;">
+            <strong>Speed:</strong> <span id="instantaneous-speed-value">unknown</span>
+        </div>
+    </div>
+    <div id="ftms/treadmill" class="status">
+        <div id="legend" style="margin-bottom: -5px;"></div>
+        <canvas id="canvas"></canvas>
+    </div>
+    <div class="light-control-group">
+        <div class="light-control">
+            <button id="ftms/treadmill/start">Start</button>
+            <button id="ftms/treadmill/stop">Stop</button>
+            &nbsp
+            <div class="linear-sliders-container">
+                <div class="linear-slider-container" id="linearSpeedContainer" data-width="200">
+                    <img src="linear-horz.png" alt="Linear slider" class="linear-slider">
+                    <img src="handle-horz.png" alt="Handle" class="handle" id="handleSpeed">
+                    <p class="linear-slider-label">Speed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function ftms_treadmill(jsonData) {
+            // Update the instantaneous speed display
+            let instantaneousSpeedValue = jsonData.instantaneousSpeed[jsonData.instantaneousSpeed.length - 1];
+            const totalDistanceValue = jsonData.totalDistance[jsonData.totalDistance.length - 1];
+            
+            document.getElementById('instantaneous-speed-value').textContent = instantaneousSpeedValue.toFixed(1);
+            document.getElementById('total-distance-value').textContent = totalDistanceValue.toFixed(2);
+            if (instantaneousSpeedValue == 0 ) {  // slider can't handle 0, 4 represents 0.
+                instantaneousSpeedValue = 0.4
+            }
+            console.log("ftms_treadmill: "+instantaneousSpeedValue.toFixed(1) * 10)
+            ftms_treadmill_speed(instantaneousSpeedValue.toFixed(1) * 10)
+            
+            // Get our graph related document nodes
+            const container = document.querySelector('#ftms\\/treadmill').parentNode;
+            const canvas = document.querySelector('#ftms\\/treadmill canvas');
+            const legend = document.querySelector('#ftms\\/treadmill #legend');
+
+            // Get ranges for scales
+            const minMaxValues = findMinMax(jsonData);
+
+            const HORIZONTALGRIDLINES = 4;
+
+            // Tweak range to fit integers on HORIZONTALGRIDLINES horizontal grid lines
+            let leftmin = minMaxValues['totalDistance'].min;
+            let leftmax = minMaxValues['totalDistance'].max;
+            let rightmin = minMaxValues['elapsedTime'].min;
+            let rightmax = minMaxValues['elapsedTime'].max;
+            [leftmin, leftmax] = adjustMinMax(leftmin, leftmax, HORIZONTALGRIDLINES);
+            [rightmin, rightmax] = adjustMinMax(rightmin, rightmax, HORIZONTALGRIDLINES);
+
+            // Draw grid and labels
+            gridPosition = drawGrid(container, canvas, jsonData, leftmin, leftmax, rightmin, rightmax, HORIZONTALGRIDLINES);
+
+            // Plot lines for each field
+            plotLine(container, canvas, legend, jsonData, 'elapsedTime', '#FF8C00', rightmin, rightmax, gridPosition, jsonData.elapsedTime[jsonData.elapsedTime.length - 1]); // Elapsed Time (orange)
+            plotLine(container, canvas, legend, jsonData, 'totalDistance', 'blue', leftmin, leftmax, gridPosition, jsonData.totalDistance[jsonData.totalDistance.length - 1]); // Total Distance (blue)
+        }
+        
+        function ftms_treadmill_speed(data) {
+            console.log("ftms_treadmill_speed: "+data)
+            updateHandlePosition(data, 4, 40, document.getElementById('linearSpeedContainer'));
+        }
+
+        initLinearslider(document.getElementById('linearSpeedContainer'), 4, 40, "ftms/treadmill");
+        ftms_treadmill_speed(4)
+    </script>
+</div>

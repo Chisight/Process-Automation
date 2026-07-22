@@ -1,0 +1,48 @@
+<div class="container">
+    <h1>Temperature</h1>
+        <div id="environment/temperature/alder" class="status">
+            <div id="legend" style="margin-bottom: -5px;"></div>
+            <canvas id="canvas"></canvas>
+        </div>
+
+<script>
+    function environment_temperature_alder(jsonData) {
+        // Get our graph related document nodes
+        const container = document.querySelector('#environment\\/temperature\\/alder').parentNode;
+        const canvas = document.querySelector('#environment\\/temperature\\/alder canvas');
+        const legend = document.querySelector('#environment\\/temperature\\/alder #legend');
+        
+        // Get ranges for scales
+        const minMaxValues = findMinMax(jsonData);
+        
+        const HORIZONTALGRIDLINES = 3;
+
+        // Tweak range to fit integers on HORIZONTALGRIDLINES horizontal grid lines
+        let leftmin = minMaxValues['temperature'].min;
+        let leftmax = minMaxValues['temperature'].max;
+        let rightmin = minMaxValues['humidity'].min;
+        let rightmax = minMaxValues['humidity'].max;
+        [leftmin, leftmax] = adjustMinMax(leftmin, leftmax, HORIZONTALGRIDLINES);
+        [rightmin, rightmax] = adjustMinMax(rightmin, rightmax, HORIZONTALGRIDLINES);
+
+        // Calculate average temperature in Fahrenheit
+        const totalTemperature = jsonData.temperature
+            .map(value => parseFloat(value)) // Convert each value to a float
+            .reduce((sum, value) => sum + value, 0);
+        const averageTemperatureF = totalTemperature / jsonData.temperature.length;
+        const totalHumidity = jsonData.humidity
+            .map(value => parseFloat(value)) // Convert each value to a float
+            .reduce((sum, value) => sum + value, 0);
+        const averageHumidity = totalHumidity / jsonData.humidity.length;
+        
+        // Draw grid and labels
+        gridPosition = drawGrid(container, canvas, jsonData, leftmin, leftmax, rightmin, rightmax, HORIZONTALGRIDLINES);
+
+        // Plot lines for each field
+        plotLine(container, canvas, legend, jsonData, 'temperature', 'red', leftmin, leftmax, gridPosition, jsonData.temperature[jsonData.temperature.length - 1]+" avg:"+averageTemperatureF.toFixed(2)+"°F"); // Temperature (red)
+        plotLine(container, canvas, legend, jsonData, 'humidity', '#307720', rightmin, rightmax, gridPosition, jsonData.humidity[jsonData.humidity.length - 1]+" avg:"+averageHumidity.toFixed(2)+"%"); // Humidity (lush green)
+    }
+</script>
+
+</div>
+

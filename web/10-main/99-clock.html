@@ -1,0 +1,116 @@
+<div class="container">
+  <h1>Clock</h1>
+  <div class="local-time-container">
+    <div class="local-day" id="localDay"></div>
+    <div class="local-clock" id="localClock"></div>
+    <div class="local-date" id="localDate"></div>
+  </div>
+  <div class="progress-container">
+    <div class="progress-bar" id="localProgressBar"></div>
+  </div>
+  <div class="clock-container" id="worldClocks"></div>
+</div>
+
+<style>
+.local-time-container {
+  display: flex;
+  align-items: center;
+}
+
+#localDay {
+  flex: 0 1 auto;
+  text-align: left;
+  font-size: 30px;
+}
+
+#localClock {
+  flex: 1;
+  text-align: center;
+  font-size: 50px;
+}
+
+#localDate {
+  flex: 0 1 auto;
+  text-align: right;
+  font-size: 28px;
+}
+
+.progress-container {
+  margin: 0;
+}
+</style>
+
+<script>
+function addClock(clockId, timeZone) {
+  var clockContainer = document.getElementById('worldClocks');
+  var newClock = document.createElement('div');
+  newClock.id = clockId;
+  newClock.className = 'clock-item';
+
+  clockContainer.appendChild(newClock);
+
+  var updateTime = function () {
+    var now = new Date(new Date().toLocaleString('en-US', { timeZone: timeZone }));
+    var hours = now.getHours();
+    var minutes = now.getMinutes();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Handle midnight (0 hours)
+    minutes = String(minutes).padStart(2, '0');
+    var clockDisplay = clockId + ' ' + hours + ':' + minutes + ' ' + ampm;
+    document.getElementById(clockId).textContent = clockDisplay;
+  };
+
+  setInterval(updateTime, 10000);
+  updateTime();
+}
+
+// Add local clock with day, time, and date
+var localDayDisplay = document.getElementById('localDay');
+var localClockDisplay = document.getElementById('localClock');
+var localDateDisplay = document.getElementById('localDate');
+var updateLocalTime = function () {
+  var now = new Date();
+  
+  // Format day
+  var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var dayName = days[now.getDay()];
+  localDayDisplay.textContent = dayName;
+  
+  // Format date
+  var months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                'July', 'August', 'September', 'October', 'November', 'December'];
+  var monthName = months[now.getMonth()];
+  var date = now.getDate();
+  var year = now.getFullYear();
+  var dateString = monthName + ' ' + date + ', ' + year;
+  localDateDisplay.textContent = dateString;
+  
+  // Format time
+  var hours = now.getHours();
+  var minutes = now.getMinutes();
+  var seconds = now.getSeconds();
+  var ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // Handle midnight (0 hours)
+  minutes = String(minutes).padStart(2, '0');
+  seconds = String(seconds).padStart(2, '0');
+  var localClockDisplayText = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+  localClockDisplay.textContent = localClockDisplayText;
+
+  // Update local progress bar
+  var totalMinutes = now.getHours() * 60 + now.getMinutes();
+  var percentage = (totalMinutes / 1440) * 100;
+  document.getElementById('localProgressBar').style.width = percentage + '%';
+};
+
+setInterval(updateLocalTime, 1000);
+updateLocalTime();
+
+// Add international clocks
+addClock('UTC', 'UTC');
+addClock('Beijing', 'Asia/Shanghai');
+addClock('Sydney', 'Australia/Sydney');
+addClock('Hawaii', 'Pacific/Honolulu');
+</script>
+

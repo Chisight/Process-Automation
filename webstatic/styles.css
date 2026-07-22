@@ -1,0 +1,286 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #0d1117;  /* ADD THIS LINE */
+    color: #c9d1d9;
+    margin: 0;
+    padding: 0;
+}
+
+.container-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    min-height: 100vh;
+    gap: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.tabs {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tab-content {
+    /*flex: 1 1 auto;*/
+    display: none;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    /*gap: 10px;*/
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+.tab-content.active {
+    display: grid;
+}
+
+.tab-container {
+    /*max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;*/
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#websocketstatus.socketstatus {
+    flex: 0 0 auto;
+}
+
+.container {
+    padding: 5px;
+    margin-bottom: 15px;
+    background-color: #0d1117;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    overflow: visible;
+}
+
+.container h1 {
+    text-align: left; /* Left-align all h1 titles in containers */
+    margin: 0; /* Remove default margin */
+}
+
+
+.tab-link {
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    flex-grow: 1;
+    text-align: center;
+    background-color: #0d1117;
+    color: #c9d1d9;
+}
+
+.tab-link:hover {
+    background-color: #161b22;
+    color: #f0f6fc;
+}
+
+.tab-link.active {
+    background-color: #0d1117;
+    border-bottom: 2px solid #233686;
+    color: #f0f6fc;
+    font-weight: bold;
+}
+
+h1 {
+    color: #f0f6fc;
+    text-align: center;
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+
+button {
+    background-color: #233686;
+    color: #f0f6fc;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #2ea043;
+}
+
+.status {
+    color: #c9d1d9;
+    text-align: center;
+    margin-top: 0px;
+    font-size: 18px;
+}
+
+#clock {
+    font-family: 'Roboto', sans-serif;
+    font-size: 48px;
+    text-align: center;
+    margin-top: 1px;
+    color: #f0f6fc; /* Adjust color as needed */
+}
+
+  .clock-container {
+    justify-content: center;
+    display: flex;
+  }
+
+  .clock-item {
+    padding: 5px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    text-align: center;
+  }
+
+  #localClock {
+    font-size: 48px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    text-align: center;
+  }
+
+  .progress-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    height: 10px;
+    margin-top: 5px;
+    border-radius: 0; /* Removed rounded corners */
+    position: relative;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background-color: #233686; /* Used the button color */
+    width: 0%;
+    position: absolute;
+  }
+
+.light-control-group {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.light-control {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.light-control button {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.status-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.status-container img {
+    margin-right: 10px;
+}
+
+.status-container .status {
+    margin-left: auto;
+}
+
+.dial-container {
+    position: relative;
+    width: 100px;
+    height: 120px; /* Increased height to accommodate labels */
+    margin: 0 auto;
+    margin-bottom: 20px; /* Increased margin to prevent overlap with buttons */
+    text-align: center; /* Center the label text */
+}
+
+.dial-label {
+    margin-top: 5px; /* Add some space above the label */
+    font-size: 14px; /* Adjust font size as needed */
+}
+
+.dials-container {
+    display: flex; /* Use flexbox to align dials side by side */
+    justify-content: center; /* Center the dials horizontally */
+    gap: 10px; /* Optional: Add some space between the dials */
+    margin-bottom: 20px; /* Add margin to create space below the dials */
+}
+
+.dial {
+    width: 100%;
+    height: auto;
+}
+
+.red-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    transform-origin: 50% 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.muteoverlay {
+    width: 50px;
+    height: 50px;
+    background-image: url('doNotEnter.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 10;
+    display: none;
+    position: absolute;
+    left: 100%;
+    transform: translate(-45px, 0);
+}
+
+.muteoverlay.visible {
+    display: block;
+}
+
+.linear-sliders-container {
+    display: flex;
+    justify-content: center;
+}
+
+.linear-slider-container {
+    position: relative;
+    display: inline-block;
+}
+
+.linear-slider {
+    display: block;
+    width: 100%;
+}
+
+.handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: grab;
+}
+
+.linear-slider-label {
+    text-align: center;
+    margin-top: 5px;
+}
+
+

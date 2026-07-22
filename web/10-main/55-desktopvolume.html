@@ -1,0 +1,69 @@
+<div class="container">
+    <div class="volume-control-container">
+        <h1>Desktop</h1>
+        <div class="dials-container">
+            <div class="dial-container" id="dialColorTempContainer" data-radius="50">
+                <img src="dial.png" alt="Dial" class="dial">
+                <img src="dialdot.png" alt="Red Dot" class="red-dot" id="redDotColorTemp">
+                <p class="dial-label">Color&nbspTemp</p>
+            </div>
+            <div class="dial-container" id="dialVolumeContainer" data-radius="50">
+                <img src="dial.png" alt="Dial" class="dial">
+                <img src="dialdot.png" alt="Red Dot" class="red-dot" id="redDotVolume">
+                <p class="dial-label">Volume</p>
+            </div>
+        </div>
+        <div class="light-control-group">
+            <div class="light-control">
+                <button id="desktop/Monitor40Red/5000">5000K</button>
+                </br>
+                <button id="desktop/Monitor40Red/3000">3000K</button>
+            </div>
+            <div class="light-control">
+                <button id="desktop/volume/up">Vol Up</button>
+                <button id="desktop/volume/down">Vol Down</button>
+                </br>
+                <button id="desktop/volume/mute">Mute</button>
+            </div>
+            <div class="status-container">
+                <div id="muteoverlay" class="muteoverlay"></div>
+                <div id="desktop/Monitor40Redstate" class="status">unknown</div>
+                &nbsp&nbsp&nbsp
+                <div id="desktop/volumestate" class="status">unknown</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+function desktop_volume(data) {
+    const value = data.state;
+    updateRedDotPosition(value, 0, 100, document.getElementById('dialVolumeContainer'));
+
+    const divElement = document.getElementById('desktop/volumestate');
+    const muteoverlayElement = document.getElementById('muteoverlay');
+
+    // Update status text
+    divElement.textContent = `${value}%`; // Display the value
+
+    // Show or hide the muteoverlay based on mute state
+    muteoverlayElement.classList.toggle('visible', data.mute === "true");
+}
+
+function desktop_Monitor40Red(data) {
+    const value = data.state;
+    //console.log("Monitor40Red:"+value);
+    updateRedDotPosition(value, 2000, 6000, document.getElementById('dialColorTempContainer'));
+
+    const divElement = document.getElementById('desktop/Monitor40Redstate');
+
+    // Update status text
+    divElement.textContent = `${value}K`; // Display the value
+}
+
+initDial(document.getElementById('dialVolumeContainer'), 0, 100, 5, "desktop/volume");
+initDial(document.getElementById('dialColorTempContainer'), 2000, 6000, 5, "desktop/Monitor40Red");
+
+</script>
+

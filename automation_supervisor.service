@@ -1,0 +1,15 @@
+[Unit]
+Description=Python Automation Supervisor
+After=network-online.target
+
+[Service]
+Type=simple
+User=auto
+WorkingDirectory=~
+Environment="PATH=/$HOME/miniforge3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/bin/bash -c "source /$HOME/miniforge3/etc/profile.d/conda.sh && conda activate automation && /$HOME/miniforge3/envs/automation/bin/python3 /$HOME/bin/supervisor.py"
+Restart=always
+
+[Install]
+WantedBy=default.target
+

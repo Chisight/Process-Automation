@@ -1,0 +1,29 @@
+    <div class="container">
+        <h1>Screen</h1>
+        <div class="light-control-group">
+            <div class="light-control">
+                <button id="screen/power/on">Screen ON</button>
+                <button id="screen/power/off">Screen OFF</button>
+            </div>
+            <div class="status-container">
+            <div id="screen/powerstate" class="status">unknown</div>&nbsp
+                <img class="statusimage" src="" alt="Status Image">
+            </div>
+        </div>
+    </div>
+    <script>
+        function screen_power(data) {
+            // Find the specific div with id "screen/powerstate"
+            const divElement = document.getElementById('screen/powerstate');
+            // Find the child img element within the div
+            const imgElement = divElement.nextElementSibling;
+            // Update status text
+            divElement.textContent = data.state;
+            // Update image source
+            const imageUrl = data.state === 'off' ? 'screenoff.png' : 'screenon.png';
+            //console.log("imageUrl:"+imageUrl);
+            imgElement.src = imageUrl;
+            //console.log("imgElement.src:"+imgElement.src);
+        }
+
+    </script>

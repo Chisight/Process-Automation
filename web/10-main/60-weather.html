@@ -1,0 +1,117 @@
+<div class="container">
+    <h1 id="weather-heading">Weather</h1>
+    <div id="environment/weather/lib" class="status">
+        <div id="legend" style="margin-bottom: -5px;"></div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        function environment_weather_lib(jsonData) {
+            //get our graph related document nodes
+            const container = document.querySelector('#environment\\/weather\\/lib').parentNode;
+            const canvas = document.querySelector('#environment\\/weather\\/lib canvas');
+            const legend = document.querySelector('#environment\\/weather\\/lib #legend');
+            // Get ranges for scales
+            const minMaxValues = findMinMax(jsonData);
+
+            const HORIZONTALGRIDLINES = 6;
+
+            // Tweak range to fit integers on HORIZONTALGRIDLINES horizontal grid lines
+            let leftmin = Math.min(minMaxValues['apparentTemperature'].min, minMaxValues['temperature'].min);
+            let leftmax = Math.max(minMaxValues['apparentTemperature'].max, minMaxValues['temperature'].max);
+            let rightmin = Math.min(minMaxValues['humidity'].min, minMaxValues['precipitation'].min, minMaxValues['cloudcover'].min);
+            let rightmax = Math.max(minMaxValues['humidity'].max, minMaxValues['precipitation'].max, minMaxValues['cloudcover'].max);
+            [leftmin, leftmax] = adjustMinMax(leftmin, leftmax, HORIZONTALGRIDLINES);
+            [rightmin, rightmax] = adjustMinMax(rightmin, rightmax, HORIZONTALGRIDLINES);
+            if (rightmax > 100) {
+                rightmin = rightmin + 100 - rightmax;
+                rightmax = 100;
+            }
+            // Draw grid and labels
+            gridPosition = drawGrid(container, canvas, jsonData, leftmin, leftmax, rightmin, rightmax, HORIZONTALGRIDLINES);
+
+            // Plot lines for each field
+            plotLine(container, canvas, legend, jsonData, 'temperature', 'red', leftmin, leftmax, gridPosition, jsonData.temperature[0] + "°F"); // Temperature (red)
+            plotLine(container, canvas, legend, jsonData, 'apparentTemperature', '#ffa000', leftmin, leftmax, gridPosition, jsonData.apparentTemperature[0] == "null" ? jsonData.temperature[0] + "°F" : jsonData.apparentTemperature[0] + "°F", true); // Apparent temperature (alert orange)
+            plotLine(container, canvas, legend, jsonData, 'humidity', '#307720', rightmin, rightmax, gridPosition, jsonData.humidity[0] + "%"); // Humidity (lush green)
+            plotLine(container, canvas, legend, jsonData, 'precipitation', '#c0d0d0', rightmin, rightmax, gridPosition, "https://radar.weather.gov/ridge/standard/KLOT_loop.gif"); // Precipitation (rainy gray)
+            plotLine(container, canvas, legend, jsonData, 'cloudcover', '#6d98d6', rightmin, rightmax, gridPosition, "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/DayNightCloudMicroCombo/GOES16-CONUS-DayNightCloudMicroCombo-625x375.gif"); // Cloud cover (sky blue)
+            plotLine(container, canvas, legend, jsonData, 'wind', '#1010AF', 0, 50, gridPosition, jsonData.wind[0] + "mph"); // Wind (stormy blue) //note fixed scale of 0-60mph
+            plotLine(container, canvas, legend, jsonData, 'gusts', '#700070', 0, 50, gridPosition, jsonData.gusts[0] == "null" ? jsonData.wind[0] + "mph" : jsonData.gusts[0] + "mph"); // Gusts (purple) //note fixed scale of 0-50mph
+
+            // if id is not present, append "(0-50mph)" to legend
+            if (!legend.querySelector('#legend-item-0-50mph')) {
+                const legendItem = document.createElement('div');
+                legendItem.style.display = 'inline-flex'; // Display inline
+
+                // Set the id to uniquely identify the element
+                legendItem.id = 'legend-item-0-50mph';
+
+                const legendText = document.createElement('span');
+                legendText.textContent = "(0-50mph)";
+                legendItem.appendChild(legendText);
+
+                legend.appendChild(legendItem);
+            }
+        }
+
+        const weatherHeading = document.getElementById('weather-heading');
+        let currentImage = null; // Track the currently displayed image
+
+        weatherHeading.addEventListener('mousemove', function(event) {
+            const rect = weatherHeading.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const headingWidth = rect.width;
+
+            let imageUrl;
+            if (mouseX < headingWidth / 3) {
+                imageUrl = "https://www.wpc.ncep.noaa.gov/NationalForecastChart/staticmaps/noaad1.png";
+            } else if (mouseX < (headingWidth * 2) / 3) {
+                imageUrl = "https://www.wpc.ncep.noaa.gov/NationalForecastChart/staticmaps/noaad2.png";
+            } else {
+                imageUrl = "https://www.wpc.ncep.noaa.gov/NationalForecastChart/staticmaps/noaad3.png";
+            }
+
+            if (currentImage === imageUrl) {
+                return; // If the same image, don't reload
+            }
+
+            currentImage = imageUrl; // Update the current image
+
+            // Remove any existing image container
+            const existingImageContainer = weatherHeading.querySelector('.image-container');
+            if (existingImageContainer) {
+                weatherHeading.removeChild(existingImageContainer);
+            }
+
+            // Create and append the new image container
+            const imageContainer = document.createElement('div');
+            imageContainer.classList.add('image-container');
+            imageContainer.style.position = 'absolute';
+            imageContainer.style.zIndex = '1000';
+            imageContainer.style.background = 'white';
+            imageContainer.style.padding = '10px';
+            imageContainer.style.border = '1px solid #ccc';
+
+            const img = document.createElement('img');
+            img.src = imageUrl;
+
+            // Optional delay to ensure the image is loaded
+            setTimeout(() => {
+                img.style.width = '100%';
+                imageContainer.appendChild(img);
+                weatherHeading.appendChild(imageContainer);
+            }, 10); // Adjust delay as needed
+
+        });
+
+        weatherHeading.addEventListener('mouseout', function() {
+            const existingImageContainer = weatherHeading.querySelector('.image-container');
+            if (existingImageContainer) {
+                weatherHeading.removeChild(existingImageContainer);
+            }
+            currentImage = null; // Reset current image
+        });
+
+    </script>
+</div>
