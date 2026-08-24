@@ -70,7 +70,7 @@ var localDayDisplay = document.getElementById('localDay');
 var localClockDisplay = document.getElementById('localClock');
 var localDateDisplay = document.getElementById('localDate');
 var updateLocalTime = function () {
-  var now = new Date();
+   var now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
   
   // Format day
   var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
