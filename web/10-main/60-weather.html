@@ -6,6 +6,25 @@
     </div>
 
     <script>
+        function parseValue(v) {
+          return parseFloat(String(v).replace(/[^0-9.+-]/g, ""));
+        }
+
+        // Absolute humidity in g/m³
+        function absoluteHumidity(tempF, rhPercent) {
+          const tempC = (tempF - 32) * 5 / 9;
+          const es = 6.112 * Math.exp((17.67 * tempC) / (tempC + 243.5)); // hPa
+          const ah = (2.1674 * es * rhPercent) / (273.15 + tempC); // g/m^3
+          return ah;
+        }
+
+        function adjustMinMaxHigher(min, max, gridlines) {
+          const span = max - min;
+          if (span <= 0) return [Math.floor(min), Math.ceil(max)];
+          min -= span * 0.25;
+          return [Math.floor(min), Math.ceil(max)];
+        }
+
         function environment_weather_lib(jsonData) {
             //get our graph related document nodes
             const container = document.querySelector('#environment\\/weather\\/lib').parentNode;
@@ -13,6 +32,15 @@
             const legend = document.querySelector('#environment\\/weather\\/lib #legend');
             // Get ranges for scales
             const minMaxValues = findMinMax(jsonData);
+            const temperature = jsonData.temperature.map(parseValue);
+            const humidity = jsonData.humidity.map(parseValue);
+
+            const absoluteHumiditySeries = temperature.map((t, i) => absoluteHumidity(t, humidity[i]));
+
+            jsonData.absoluteHumidity = absoluteHumiditySeries.map(v => v.toFixed(2) + " g/m³");
+
+
+
 
             const HORIZONTALGRIDLINES = 6;
 
@@ -21,23 +49,41 @@
             let leftmax = Math.max(minMaxValues['apparentTemperature'].max, minMaxValues['temperature'].max);
             let rightmin = Math.min(minMaxValues['humidity'].min, minMaxValues['precipitation'].min, minMaxValues['cloudcover'].min);
             let rightmax = Math.max(minMaxValues['humidity'].max, minMaxValues['precipitation'].max, minMaxValues['cloudcover'].max);
+            let ahmin = Math.min(...absoluteHumiditySeries);
+            let ahmax = Math.max(...absoluteHumiditySeries);
             [leftmin, leftmax] = adjustMinMax(leftmin, leftmax, HORIZONTALGRIDLINES);
             [rightmin, rightmax] = adjustMinMax(rightmin, rightmax, HORIZONTALGRIDLINES);
+            [ahmin, ahmax] = adjustMinMaxHigher(ahmin, ahmax, HORIZONTALGRIDLINES);
             if (rightmax > 100) {
                 rightmin = rightmin + 100 - rightmax;
                 rightmax = 100;
             }
+
             // Draw grid and labels
             gridPosition = drawGrid(container, canvas, jsonData, leftmin, leftmax, rightmin, rightmax, HORIZONTALGRIDLINES);
 
             // Plot lines for each field
-            plotLine(container, canvas, legend, jsonData, 'temperature', 'red', leftmin, leftmax, gridPosition, jsonData.temperature[0] + "°F"); // Temperature (red)
-            plotLine(container, canvas, legend, jsonData, 'apparentTemperature', '#ffa000', leftmin, leftmax, gridPosition, jsonData.apparentTemperature[0] == "null" ? jsonData.temperature[0] + "°F" : jsonData.apparentTemperature[0] + "°F", true); // Apparent temperature (alert orange)
-            plotLine(container, canvas, legend, jsonData, 'humidity', '#307720', rightmin, rightmax, gridPosition, jsonData.humidity[0] + "%"); // Humidity (lush green)
-            plotLine(container, canvas, legend, jsonData, 'precipitation', '#c0d0d0', rightmin, rightmax, gridPosition, "https://radar.weather.gov/ridge/standard/KLOT_loop.gif"); // Precipitation (rainy gray)
-            plotLine(container, canvas, legend, jsonData, 'cloudcover', '#6d98d6', rightmin, rightmax, gridPosition, "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/DayNightCloudMicroCombo/GOES16-CONUS-DayNightCloudMicroCombo-625x375.gif"); // Cloud cover (sky blue)
-            plotLine(container, canvas, legend, jsonData, 'wind', '#1010AF', 0, 50, gridPosition, jsonData.wind[0] + "mph"); // Wind (stormy blue) //note fixed scale of 0-60mph
-            plotLine(container, canvas, legend, jsonData, 'gusts', '#700070', 0, 50, gridPosition, jsonData.gusts[0] == "null" ? jsonData.wind[0] + "mph" : jsonData.gusts[0] + "mph"); // Gusts (purple) //note fixed scale of 0-50mph
+            plotLine(container, canvas, legend, jsonData, 'temperature', '#FF1100', leftmin, leftmax, gridPosition, jsonData.temperature[0] + "°F");
+            plotLine(container, canvas, legend, jsonData, 'apparentTemperature', '#F59E0B', leftmin, leftmax, gridPosition, jsonData.apparentTemperature[0] == "null" ? jsonData.temperature[0] + "°F" : jsonData.apparentTemperature[0] + "°F", true);
+            plotLine(container, canvas, legend, jsonData, 'humidity', '#008020', rightmin, rightmax, gridPosition, jsonData.humidity[0] + "%");
+            plotLine(container, canvas, legend, jsonData, 'precipitation', '#06B6D4', rightmin, rightmax, gridPosition, "https://radar.weather.gov/ridge/standard/KLOT_loop.gif");
+            plotLine(container, canvas, legend, jsonData, 'cloudcover', '#E0E0E0', rightmin, rightmax, gridPosition, "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/DayNightCloudMicroCombo/GOES16-CONUS-DayNightCloudMicroCombo-625x375.gif");
+            plotLine(container, canvas, legend, jsonData, 'wind', '#1E40AF', 0, 50, gridPosition, jsonData.wind[0] + "mph");
+            plotLine(container, canvas, legend, jsonData, 'absoluteHumidity', '#E06089', ahmin-5, ahmax, gridPosition, jsonData.absoluteHumidity[0] + " g/m³");
+            plotLine(container, canvas, legend, jsonData, 'gusts', '#B011FF', 0, 50, gridPosition, jsonData.gusts[0] == "null" ? jsonData.wind[0] + "mph" : jsonData.gusts[0] + "mph");
+
+            const items = [...legend.querySelectorAll('#absoluteHumidity')];
+            for (let i = 1; i < items.length; i++) {
+              items[i].remove();
+            }
+
+            const ahItem = legend.querySelector('#absoluteHumidity');
+            if (ahItem) {
+              const textSpan = ahItem.querySelector('span');
+              if (textSpan) {
+                textSpan.textContent = `${ahmin}-${ahmax} g/m³`;
+              }
+            }
 
             // if id is not present, append "(0-50mph)" to legend
             if (!legend.querySelector('#legend-item-0-50mph')) {

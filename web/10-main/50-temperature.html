@@ -1,48 +1,79 @@
 <div class="container">
-    <h1>Temperature</h1>
-        <div id="environment/temperature/alder" class="status">
-            <div id="legend" style="margin-bottom: -5px;"></div>
-            <canvas id="canvas"></canvas>
-        </div>
+  <h1>Temperature</h1>
+  <div id="environment/temperature/alder" class="status">
+    <div id="legend" style="margin-bottom: -5px;"></div>
+    <canvas id="canvas"></canvas>
+  </div>
 
-<script>
-    function environment_temperature_alder(jsonData) {
-        // Get our graph related document nodes
-        const container = document.querySelector('#environment\\/temperature\\/alder').parentNode;
-        const canvas = document.querySelector('#environment\\/temperature\\/alder canvas');
-        const legend = document.querySelector('#environment\\/temperature\\/alder #legend');
-        
-        // Get ranges for scales
-        const minMaxValues = findMinMax(jsonData);
-        
-        const HORIZONTALGRIDLINES = 3;
-
-        // Tweak range to fit integers on HORIZONTALGRIDLINES horizontal grid lines
-        let leftmin = minMaxValues['temperature'].min;
-        let leftmax = minMaxValues['temperature'].max;
-        let rightmin = minMaxValues['humidity'].min;
-        let rightmax = minMaxValues['humidity'].max;
-        [leftmin, leftmax] = adjustMinMax(leftmin, leftmax, HORIZONTALGRIDLINES);
-        [rightmin, rightmax] = adjustMinMax(rightmin, rightmax, HORIZONTALGRIDLINES);
-
-        // Calculate average temperature in Fahrenheit
-        const totalTemperature = jsonData.temperature
-            .map(value => parseFloat(value)) // Convert each value to a float
-            .reduce((sum, value) => sum + value, 0);
-        const averageTemperatureF = totalTemperature / jsonData.temperature.length;
-        const totalHumidity = jsonData.humidity
-            .map(value => parseFloat(value)) // Convert each value to a float
-            .reduce((sum, value) => sum + value, 0);
-        const averageHumidity = totalHumidity / jsonData.humidity.length;
-        
-        // Draw grid and labels
-        gridPosition = drawGrid(container, canvas, jsonData, leftmin, leftmax, rightmin, rightmax, HORIZONTALGRIDLINES);
-
-        // Plot lines for each field
-        plotLine(container, canvas, legend, jsonData, 'temperature', 'red', leftmin, leftmax, gridPosition, jsonData.temperature[jsonData.temperature.length - 1]+" avg:"+averageTemperatureF.toFixed(2)+"°F"); // Temperature (red)
-        plotLine(container, canvas, legend, jsonData, 'humidity', '#307720', rightmin, rightmax, gridPosition, jsonData.humidity[jsonData.humidity.length - 1]+" avg:"+averageHumidity.toFixed(2)+"%"); // Humidity (lush green)
+  <script>
+    function parseValue(v) {
+      return parseFloat(String(v).replace(/[^0-9.+-]/g, ""));
     }
-</script>
 
+    // Absolute humidity in g/m³
+    function absoluteHumidity(tempF, rhPercent) {
+      const tempC = (tempF - 32) * 5 / 9;
+      const es = 6.112 * Math.exp((17.67 * tempC) / (tempC + 243.5)); // hPa
+      const ah = (2.1674 * es * rhPercent) / (273.15 + tempC); // g/m^3
+      return ah;
+    }
+
+    function environment_temperature_alder(jsonData) {
+      const container = document.querySelector('#environment\\/temperature\\/alder').parentNode;
+      const canvas = document.querySelector('#environment\\/temperature\\/alder canvas');
+      const legend = document.querySelector('#environment\\/temperature\\/alder #legend');
+
+      const temperature = jsonData.temperature.map(parseValue);
+      const humidity = jsonData.humidity.map(parseValue);
+
+      const absoluteHumiditySeries = temperature.map((t, i) =>
+        absoluteHumidity(t, humidity[i])
+      );
+
+      jsonData.absoluteHumidity = absoluteHumiditySeries.map(v => v.toFixed(2) + " g/m³");
+
+      const HORIZONTALGRIDLINES = 3;
+
+      let leftmin = Math.min(...temperature);
+      let leftmax = Math.max(...temperature);
+
+      let rightmin = Math.min(...humidity);
+      let rightmax = Math.max(...humidity);
+
+      let ahmin = Math.min(...absoluteHumiditySeries);
+      let ahmax = Math.max(...absoluteHumiditySeries);
+
+      [leftmin, leftmax] = adjustMinMax(leftmin, leftmax, HORIZONTALGRIDLINES);
+      [rightmin, rightmax] = adjustMinMax(rightmin, rightmax, HORIZONTALGRIDLINES);
+      [ahmin, ahmax] = adjustMinMax(ahmin, ahmax, HORIZONTALGRIDLINES);
+
+      const averageTemperatureF = temperature.reduce((sum, v) => sum + v, 0) / temperature.length;
+      const averageHumidity = humidity.reduce((sum, v) => sum + v, 0) / humidity.length;
+      const averageAH = absoluteHumiditySeries.reduce((sum, v) => sum + v, 0) / absoluteHumiditySeries.length;
+
+      gridPosition = drawGrid(container, canvas, jsonData, leftmin, leftmax, rightmin, rightmax, HORIZONTALGRIDLINES);
+
+      plotLine(container, canvas, legend, jsonData, 'temperature', '#FF1100', leftmin, leftmax, gridPosition, temperature[temperature.length - 1] + " avg:" + averageTemperatureF.toFixed(2) + "°F" );
+      plotLine(container, canvas, legend, jsonData, 'humidity', '#008020', rightmin, rightmax, gridPosition, humidity[humidity.length - 1] + " avg:" + averageHumidity.toFixed(2) + "%");
+      plotLine(container, canvas, legend, jsonData, "absoluteHumidity", "#E06089", ahmin, ahmax, gridPosition, absoluteHumiditySeries[absoluteHumiditySeries.length - 1].toFixed(2) + " g/m³ avg:" + averageAH.toFixed(2) + " g/m³");
+
+      const items = [...legend.querySelectorAll('#absoluteHumidity')];
+      for (let i = 1; i < items.length; i++) {
+        items[i].remove();
+      }
+
+      const ahItem = legend.querySelector('#absoluteHumidity');
+      if (ahItem) {
+        const textSpan = ahItem.querySelector('span');
+        if (textSpan) {
+          textSpan.textContent = `${ahmin}-${ahmax} g/m³`;
+        }
+      }
+
+    }
+  </script>
 </div>
+
+
+
 
