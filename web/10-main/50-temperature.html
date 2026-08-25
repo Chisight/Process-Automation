@@ -53,7 +53,8 @@
 
       gridPosition = drawGrid(container, canvas, jsonData, leftmin, leftmax, rightmin, rightmax, HORIZONTALGRIDLINES);
 
-      plotLine(container, canvas, legend, jsonData, 'temperature', '#FF1100', leftmin, leftmax, gridPosition, temperature[temperature.length - 1] + " avg:" + averageTemperatureF.toFixed(2) + "°F" );
+      plotLine(container, canvas, legend, jsonData, 'temperature', '#FF1100', leftmin, leftmax,
+      gridPosition, temperature[temperature.length - 1] + " avg:" + averageTemperatureF.toFixed(2) + "°F" );
       plotLine(container, canvas, legend, jsonData, 'humidity', '#008020', rightmin, rightmax, gridPosition, humidity[humidity.length - 1] + " avg:" + averageHumidity.toFixed(2) + "%");
       plotLine(container, canvas, legend, jsonData, "absoluteHumidity", "#E06089", ahmin, ahmax, gridPosition, absoluteHumiditySeries[absoluteHumiditySeries.length - 1].toFixed(2) + " g/m³ avg:" + averageAH.toFixed(2) + " g/m³");
 
