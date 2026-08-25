@@ -1,3 +1,24 @@
+// set your local timezone here.
+function getAppTimezone() {
+  return 'America/Chicago';
+}
+
+// Returns a Date object shifted to act as Chicago local time
+function getAppDate(d = new Date()) {
+  return new Date(d.toLocaleString('en-US', { timeZone: getAppTimezone() }));
+}
+
+// Returns a formatted string for a Unix timestamp (seconds) in Chicago time
+function formatAppTime(timestamp) {
+  return new Date(timestamp * 1000).toLocaleString('en-US', { 
+    timeZone: getAppTimezone(), 
+    hour: 'numeric', 
+    minute: '2-digit', 
+    hour12: false 
+  });
+}
+
+
 // graphing functions:
 
 function findMinMax(jsonData) {
@@ -43,8 +64,14 @@ function adjustMinMax(min, max, divisions) {
 
 // Function to convert local time string to Date object
 function parseLocalTime(localTimeStr) {
-    return new Date(localTimeStr);
+    // If localTimeStr is a number (Unix seconds), multiply by 1000 for JS milliseconds
+    let dateVal = isNaN(localTimeStr) ? localTimeStr : parseInt(localTimeStr) * 1000;
+    let time = getAppDate(new Date(dateVal));
+    
+    //console.log(`ParseLocalTime: ${time.getHours()}:${time.getMinutes()} localTimeStr: ${localTimeStr}`);
+    return time; 
 }
+
 
 // Create a map to store display elements
 const displayElementsMap = new Map();
@@ -254,11 +281,12 @@ function drawGrid(container, canvas, jsonData, leftmin, leftmax, rightmin, right
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const times = jsonData.time.map(time => new Date(time * 1000));
+    const times = jsonData.time.map(time => getAppDate(new Date(time * 1000)));
     const dataLength = times.length;
     const timeDifference = times[dataLength - 1] - times[0];
 
 function drawLinesAndLabels(times, timeUnit) {
+
     const rawTimestamps = jsonData.time;
 
     if (times.length === 0) {
@@ -269,7 +297,7 @@ function drawLinesAndLabels(times, timeUnit) {
     const endTime = times[times.length - 1].getTime();
     const timeRange = endTime - startTime;
 
-    console.log(`startTime: ${startTime} endTime: ${endTime} gridWidth: ${gridWidth} HorizontalOffset: ${HorizontalOffset}`);
+    console.log(`startTime: ${startTime} endTime: ${endTime} gridWidth: ${gridWidth} HorizontalOffset: ${HorizontalOffset} timeUnit: ${timeUnit}`);
 
     let unitValues = [];
     if (timeUnit === 'day') {
